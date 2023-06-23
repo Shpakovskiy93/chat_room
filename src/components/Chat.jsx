@@ -5,6 +5,7 @@ import EmojiPicker from 'emoji-picker-react';
 
 import styles from '../styles/Chat.module.css';
 import icon from '../img/emoji.svg';
+import Messages from './Messages';
 
 const socket = io.connect('http://localhost:5000');
 
@@ -31,14 +32,18 @@ const Chat = () => {
 
   }
 
-  const handleChange = () => {
-
-  }
+  const handleChange = ({target: {value}}) => setMessage(value);
 
   const onEmojiClick = ({emoji}) => setMessage(`${message} ${emoji}`);
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
+    if(!message) return;
+
+    socket.emit('sendMessage', {message, params})
+
+    setMessage('');
   }
 
   return (
@@ -62,10 +67,14 @@ const Chat = () => {
       </div>
 
       <div className={styles.messages}>
-        {state.map(({message},index) => <span key={index}>{message}</span>)}
+        <Messages
+          messages={state}
+          name={params.name}
+        />
       </div>
+     
 
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.input}>
         <input 
           type='text'
