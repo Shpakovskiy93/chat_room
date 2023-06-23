@@ -7,7 +7,8 @@ import styles from '../styles/Chat.module.css';
 import icon from '../img/emoji.svg';
 import Messages from './Messages';
 
-const socket = io.connect('https://online-chat-room-rwpa.onrender.com');
+const socket = io.connect('https://online-chat-room-3zl5.onrender.com');
+
 
 const Chat = () => {
   const {search} = useLocation();
