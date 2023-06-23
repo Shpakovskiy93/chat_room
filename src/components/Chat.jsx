@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
 
 import styles from '../styles/Chat.module.css';
@@ -11,16 +11,22 @@ const socket = io.connect('http://localhost:5000');
 
 const Chat = () => {
   const {search} = useLocation();
+  const navigate = useNavigate();
   const [params, setParams] = useState({room: '', user: ''});
   const [state, setState] = useState([]);
   const [message, setMessage] = useState('')
   const [isOpen, setOpen] = useState(false);
+  const [users, setUsers] = useState(0);
 
   useEffect(() => {
-    const serachParams = Object.fromEntries(new URLSearchParams(search));
-    setParams(serachParams);
-    socket.emit('join', serachParams);
-  }, [search])
+    const searchParams = Object.fromEntries(new URLSearchParams(search));
+    setParams(searchParams);
+    socket.emit('join', searchParams);
+
+    return () => {
+      socket.off();
+    }
+  }, [search]);
 
   useEffect(() => {
     socket.on('message', ({data}) => {
@@ -28,8 +34,15 @@ const Chat = () => {
     })
   }, [])
 
-  const leftRoom = () => {
+  useEffect(() => {
+    socket.on('room', ({data: {users}}) => {
+      setUsers(users.length);
+    })
+  }, []);
 
+  const leftRoom = () => {
+    socket.emit('leftRoom', {params});
+    navigate('/');
   }
 
   const handleChange = ({target: {value}}) => setMessage(value);
@@ -55,7 +68,7 @@ const Chat = () => {
         </div>
 
         <div className={styles.users}>
-          0 users in this room
+          {users} users in this room
         </div>
 
         <button 
